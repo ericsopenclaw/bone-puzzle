@@ -144,9 +144,9 @@
   .gap-4 {
     gap: 0.75rem;
   }
-  /* Ensure bone items have enough height */
+  /* Ensure bone items have enough height for touch */
   [class*="bone-card"] {
-    min-height: 68px !important;
+    min-height: 88px !important;
   }
   /* Full-width skeleton drop zones on mobile */
   .skeleton-outline-container {

@@ -93,7 +93,7 @@ export default function SkeletonOutline({
   };
 
   return (
-    <div className="relative w-full">
+    <div className="relative w-full touch-none skeleton-svg-container">
       {/* SVG Skeleton */}
       <svg
         viewBox="0 0 360 520"
