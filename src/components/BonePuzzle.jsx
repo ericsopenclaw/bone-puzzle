@@ -2,41 +2,9 @@ import { useState, useCallback, useMemo, useEffect } from 'react';
 import { getBonesByRegion, REGIONS } from '../data/bonesData';
 import { useDragAndDrop, useTouchDragAndDrop } from '../hooks/useDragAndDrop';
 import BoneItem from './BoneItem';
-import DropZone from './DropZone';
+import SkeletonOutline from './SkeletonOutline';
 import ScoreBoard from './ScoreBoard';
 import ClinicalTip from './ClinicalTip';
-
-// Zone definitions per region — maps boneId -> zone metadata
-const ZONE_CONFIGS = {
-  upper_limb: [
-    { id: 'zone_clavicle', boneId: 'clavicle', boneName: '鎖骨', boneNameEn: 'Clavicle', position: '肩帶 / 上方', hint: '連接胸骨與肩胛骨的S形骨骼' },
-    { id: 'zone_scapula', boneId: 'scapula', boneName: '肩胛骨', boneNameEn: 'Scapula', position: '肩帶 / 後方', hint: '後背的三角形扁平骨' },
-    { id: 'zone_humerus', boneId: 'humerus', boneName: '肱骨', boneNameEn: 'Humerus', position: '上臂', hint: '上臂唯一的長骨' },
-    { id: 'zone_radius', boneId: 'radius', boneName: '橈骨', boneNameEn: 'Radius', position: '前臂 / 外側（拇指側）', hint: '前臂拇指側的骨骼，Colles骨折常見' },
-    { id: 'zone_ulna', boneId: 'ulna', boneName: '尺骨', boneNameEn: 'Ulna', position: '前臂 / 內側（小指側）', hint: '前臂小指側的骨骼，有鷹嘴突' },
-    { id: 'zone_carpal', boneId: 'carpal', boneName: '腕骨', boneNameEn: 'Carpal Bones', position: '手腕', hint: '由8塊小骨組成的腕關節群' },
-    { id: 'zone_metacarpal', boneId: 'metacarpal', boneName: '掌骨', boneNameEn: 'Metacarpals', position: '手掌', hint: '連接腕骨與指骨的5根骨骼' },
-  ],
-  lower_limb: [
-    { id: 'zone_ilium', boneId: 'ilium', boneName: '髂骨', boneNameEn: 'Ilium', position: '骨盆 / 上外方', hint: '骨盆最大的骨骼，構成骨盆翼' },
-    { id: 'zone_pubis', boneId: 'pubis', boneName: '恥骨', boneNameEn: 'Pubis', position: '骨盆 / 前下方', hint: '骨盆前方，兩側由恥骨聯合連接' },
-    { id: 'zone_ischium', boneId: 'ischium', boneName: '坐骨', boneNameEn: 'Ischium', position: '骨盆 / 後下方', hint: '坐姿時的承重點' },
-    { id: 'zone_femur', boneId: 'femur', boneName: '股骨', boneNameEn: 'Femur', position: '大腿', hint: '人體最長最強壯的骨骼' },
-    { id: 'zone_patella', boneId: 'patella', boneName: '髕骨', boneNameEn: 'Patella', position: '膝蓋', hint: '人體最大的種子骨，保護膝關節' },
-    { id: 'zone_tibia', boneId: 'tibia', boneName: '脛骨', boneNameEn: 'Tibia', position: '小腿 / 內側（承重）', hint: '小腿主要承重骨，IO注射常用部位' },
-    { id: 'zone_fibula', boneId: 'fibula', boneName: '腓骨', boneNameEn: 'Fibula', position: '小腿 / 外側', hint: '小腿外側細長骨，外踝骨折常見' },
-    { id: 'zone_talus', boneId: 'talus', boneName: '距骨', boneNameEn: 'Talus', position: '踝關節', hint: '連接小腿與足部的踝關節主骨' },
-    { id: 'zone_calcaneus', boneId: 'calcaneus', boneName: '跟骨', boneNameEn: 'Calcaneus', position: '足跟', hint: '足部最大骨骼，高墜傷常骨折' },
-  ],
-  thorax: [
-    { id: 'zone_sternum', boneId: 'sternum', boneName: '胸骨', boneNameEn: 'Sternum', position: '胸廓 / 前中央', hint: '胸廓前方中央的扁平骨，CPR按壓位置' },
-    { id: 'zone_rib_1_7', boneId: 'rib_1_7', boneName: '第1-7肋骨（真肋）', boneNameEn: 'Ribs 1-7 (True)', position: '胸廓 / 上段肋骨', hint: '直接連接胸骨的7對肋骨' },
-    { id: 'zone_rib_8_12', boneId: 'rib_8_12', boneName: '第8-12肋骨（假肋/浮肋）', boneNameEn: 'Ribs 8-12 (False/Floating)', position: '胸廓 / 下段肋骨', hint: '間接連接或游離的下段肋骨' },
-    { id: 'zone_thoracic_vertebrae', boneId: 'thoracic_vertebrae', boneName: '胸椎（T1-T12）', boneNameEn: 'Thoracic Vertebrae', position: '胸廓 / 後方脊椎', hint: '12節胸椎構成胸廓後壁' },
-    { id: 'zone_clavicle_thorax', boneId: 'clavicle_thorax', boneName: '鎖骨（胸廓端）', boneNameEn: 'Clavicle (Medial)', position: '胸廓 / 上方兩側', hint: '鎖骨與胸骨柄形成胸鎖關節' },
-    { id: 'zone_scapula_thorax', boneId: 'scapula_thorax', boneName: '肩胛骨（胸廓面）', boneNameEn: 'Scapula (Posterior)', position: '胸廓 / 後外側', hint: '緊貼胸廓後外側的三角形骨骼' },
-  ],
-};
 
 function shuffleArray(arr) {
   const a = [...arr];
@@ -49,18 +17,17 @@ function shuffleArray(arr) {
 
 export default function BonePuzzle({ region, mode, gameState, onScoreChange, onComplete }) {
   const bones = useMemo(() => getBonesByRegion(region), [region]);
-  const zones = useMemo(() => ZONE_CONFIGS[region] || [], [region]);
   const regionInfo = REGIONS[region];
 
   // Game state
   const [shuffledBones, setShuffledBones] = useState([]);
   const [correctPlacements, setCorrectPlacements] = useState({}); // zoneId -> boneId
-  const [incorrectZone, setIncorrectZone] = useState(null); // flash red
+  const [incorrectZone, setIncorrectZone] = useState(null);
   const [tipBone, setTipBone] = useState(null);
   const [attempts, setAttempts] = useState(0);
 
   const score = Object.keys(correctPlacements).length;
-  const total = zones.length;
+  const total = bones.length;
 
   // Initialize / reset when game starts
   useEffect(() => {
@@ -92,20 +59,22 @@ export default function BonePuzzle({ region, mode, gameState, onScoreChange, onC
     }
   }, [incorrectZone]);
 
+  // Zone id pattern: zone_<boneId>
+  const getZoneId = (boneId) => `zone_${boneId}`;
+
   const handleDrop = useCallback((boneId, zoneId) => {
     if (gameState !== 'playing') return;
-    const zone = zones.find(z => z.id === zoneId);
-    if (!zone) return;
     if (correctPlacements[zoneId]) return; // already correct
 
     setAttempts(a => a + 1);
 
-    if (zone.boneId === boneId) {
+    // Check if bone matches zone
+    if (getZoneId(boneId) === zoneId) {
       setCorrectPlacements(prev => ({ ...prev, [zoneId]: boneId }));
     } else {
       setIncorrectZone(zoneId);
     }
-  }, [gameState, zones, correctPlacements]);
+  }, [gameState, correctPlacements]);
 
   const { draggingId, dragOverZone, handleDragStart, handleDragEnd, handleDragOver, handleDragLeave, handleDrop: dndDrop } = useDragAndDrop(handleDrop);
   const { draggingId: touchDraggingId, dragOverZone: touchDragOverZone, handleTouchStart, handleTouchMove, handleTouchEnd } = useTouchDragAndDrop(handleDrop);
@@ -181,8 +150,8 @@ export default function BonePuzzle({ region, mode, gameState, onScoreChange, onC
         onTimeUp={onComplete}
       />
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        {/* Bone tray */}
+      <div className="grid grid-cols-1 lg:grid-cols-[300px_1fr] gap-5">
+        {/* LEFT: Draggable bone tray */}
         <div className="bg-slate-800/40 border border-slate-700 rounded-2xl p-4">
           <div className="flex items-center gap-2 mb-3">
             <span className="text-lg">{regionInfo?.icon}</span>
@@ -190,9 +159,18 @@ export default function BonePuzzle({ region, mode, gameState, onScoreChange, onC
               骨骼列表 — {regionInfo?.name}
             </h3>
             <span className="ml-auto text-xs text-slate-500">
-              拖曳至右側對應位置
+              拖放到右側
             </span>
           </div>
+
+          {/* Instruction for image mode */}
+          <div className="mb-3 flex items-center gap-2 bg-blue-900/30 border border-blue-800/50 rounded-xl px-3 py-2">
+            <span className="text-blue-300 text-sm">💡</span>
+            <p className="text-xs text-blue-300 leading-relaxed">
+              拖曳骨頭圖片，放到右側骨骼輪廓的正確位置
+            </p>
+          </div>
+
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             {shuffledBones.map(bone => (
               <BoneItem
@@ -212,38 +190,31 @@ export default function BonePuzzle({ region, mode, gameState, onScoreChange, onC
           </div>
         </div>
 
-        {/* Drop zones */}
+        {/* RIGHT: Skeleton outline */}
         <div className="bg-slate-800/40 border border-slate-700 rounded-2xl p-4">
           <div className="flex items-center gap-2 mb-3">
             <span className="text-lg">🎯</span>
             <h3 className="text-sm font-semibold text-slate-300">
-              解剖位置
+              骨骼輪廓 — {regionInfo?.name}
             </h3>
             <span className="ml-auto text-xs text-slate-500">
               {score}/{total} 完成
             </span>
           </div>
-          <div className="space-y-2">
-            {zones.map(zone => {
-              const placedBoneId = correctPlacements[zone.id];
-              const placedBone = placedBoneId ? bones.find(b => b.id === placedBoneId) : null;
-              return (
-                <DropZone
-                  key={zone.id}
-                  zone={zone}
-                  isCorrect={!!correctPlacements[zone.id]}
-                  isIncorrect={incorrectZone === zone.id}
-                  isDragOver={effectiveDragOver === zone.id && !correctPlacements[zone.id]}
-                  placedBone={placedBone}
-                  mode={mode}
-                  onDragOver={handleDragOver}
-                  onDragLeave={handleDragLeave}
-                  onDrop={dndDrop}
-                  onInfoClick={setTipBone}
-                />
-              );
-            })}
-          </div>
+
+          {/* Skeleton SVG with drop zones */}
+          <SkeletonOutline
+            region={region}
+            correctPlacements={correctPlacements}
+            incorrectZone={incorrectZone}
+            dragOverZone={effectiveDragOver}
+            onDrop={dndDrop}
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            mode={mode}
+            bones={bones}
+            onInfoClick={setTipBone}
+          />
         </div>
       </div>
 

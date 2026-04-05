@@ -1,3 +1,33 @@
+import { BONE_SVGS } from '../data/bonesData';
+
+function BoneSVG({ boneId, size = 56 }) {
+  const svgData = BONE_SVGS[boneId];
+  if (!svgData) {
+    return (
+      <div className="w-12 h-12 bg-slate-600 rounded-lg flex items-center justify-center text-xl">
+        🦴
+      </div>
+    );
+  }
+  return (
+    <svg
+      viewBox={svgData.viewBox}
+      width={size}
+      height={size}
+      className="bone-svg"
+      style={{ overflow: 'visible' }}
+    >
+      <path
+        d={svgData.path}
+        fill={svgData.color}
+        stroke="#cbd5e1"
+        strokeWidth="3"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
 export default function BoneItem({
   bone,
   isDragging,
@@ -29,18 +59,30 @@ export default function BoneItem({
       `}
     >
       <div className="flex items-center gap-2">
-        <span className="text-base">🦴</span>
+        {/* Bone SVG */}
+        <div className={`shrink-0 ${disabled ? 'opacity-50' : ''}`}>
+          <BoneSVG boneId={bone.svgKey} size={48} />
+        </div>
+
         <div className="flex-1 min-w-0">
-          <div className={`font-semibold truncate ${disabled ? 'text-emerald-400' : 'text-white'}`}>
+          <div className={`font-semibold truncate text-xs leading-tight ${disabled ? 'text-emerald-400' : 'text-white'}`}>
             {bone.name}
           </div>
           {showName && (
-            <div className="text-[10px] text-slate-400 truncate">{bone.nameEn}</div>
+            <div className="text-[10px] text-slate-400 truncate mt-0.5">{bone.nameEn}</div>
           )}
+          <div className="text-[9px] text-slate-500 mt-0.5">{bone.category}</div>
         </div>
 
-        {disabled && (
+        {disabled ? (
           <span className="text-emerald-400 text-base shrink-0">✓</span>
+        ) : (
+          <div className="shrink-0 flex flex-col gap-1">
+            {/* Drag handle icon */}
+            <div className="text-slate-600 text-xs opacity-0 group-hover:opacity-100 transition-opacity">
+              ⋮⋮
+            </div>
+          </div>
         )}
 
         {!disabled && mode === 'learn' && (
@@ -57,9 +99,8 @@ export default function BoneItem({
           </button>
         )}
       </div>
-
-      {/* Category badge */}
-      <div className="mt-1 text-[10px] text-slate-500">{bone.category}</div>
     </div>
   );
 }
+
+export { BoneSVG };
