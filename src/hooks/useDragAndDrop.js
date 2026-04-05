@@ -25,7 +25,6 @@ export function useDragAndDrop(onDrop) {
   }, []);
 
   const handleDragLeave = useCallback((e) => {
-    // Only clear if leaving the drop zone entirely (not entering a child)
     if (!e.currentTarget.contains(e.relatedTarget)) {
       setDragOverZone(null);
     }
@@ -61,19 +60,22 @@ export function useTouchDragAndDrop(onDrop) {
   const ghostRef = useRef(null);
 
   const createGhost = useCallback((element, x, y) => {
+    removeGhost();
     const ghost = element.cloneNode(true);
     ghost.style.cssText = `
       position: fixed;
-      top: ${y - 30}px;
-      left: ${x - 60}px;
-      width: ${element.offsetWidth}px;
+      top: ${y - 40}px;
+      left: ${x - 70}px;
+      width: min(${element.offsetWidth}px, 180px);
       pointer-events: none;
-      opacity: 0.85;
-      transform: scale(1.05);
+      opacity: 0.9;
       z-index: 9999;
       transition: none;
+      border-radius: 16px;
+      box-shadow: 0 8px 32px rgba(59,130,246,0.4);
     `;
     document.body.appendChild(ghost);
+    ghostRef.current = ghost;
     return ghost;
   }, []);
 
@@ -85,31 +87,34 @@ export function useTouchDragAndDrop(onDrop) {
   }, []);
 
   const getDropZoneAtPoint = useCallback((x, y) => {
+    // Temporarily hide ghost to get element underneath
+    if (ghostRef.current) ghostRef.current.style.display = 'none';
     const elements = document.elementsFromPoint(x, y);
+    if (ghostRef.current) ghostRef.current.style.display = '';
     for (const el of elements) {
-      const zoneId = el.dataset.zoneid;
-      if (zoneId) return zoneId;
+      // Check data-zoneid on the element or its ancestors
+      const zoneEl = el.closest('[data-zoneid]');
+      if (zoneEl) return zoneEl.dataset.zoneid;
     }
     return null;
   }, []);
 
   const handleTouchStart = useCallback((e, boneId) => {
+    if (e.touches.length !== 1) return;
     const touch = e.touches[0];
     touchStateRef.current = { boneId, startX: touch.clientX, startY: touch.clientY };
     setDraggingId(boneId);
-
-    const ghost = createGhost(e.currentTarget, touch.clientX, touch.clientY);
-    ghostRef.current = ghost;
+    createGhost(e.currentTarget, touch.clientX, touch.clientY);
   }, [createGhost]);
 
   const handleTouchMove = useCallback((e) => {
-    if (!touchStateRef.current) return;
-    e.preventDefault();
+    if (!touchStateRef.current || e.touches.length !== 1) return;
+    e.preventDefault(); // Prevent page scroll
     const touch = e.touches[0];
 
     if (ghostRef.current) {
-      ghostRef.current.style.top = `${touch.clientY - 30}px`;
-      ghostRef.current.style.left = `${touch.clientX - 60}px`;
+      ghostRef.current.style.top = `${touch.clientY - 40}px`;
+      ghostRef.current.style.left = `${touch.clientX - 70}px`;
     }
 
     const zoneId = getDropZoneAtPoint(touch.clientX, touch.clientY);
@@ -117,7 +122,7 @@ export function useTouchDragAndDrop(onDrop) {
   }, [getDropZoneAtPoint]);
 
   const handleTouchEnd = useCallback((e) => {
-    if (!touchStateRef.current) return;
+    if (!touchStateRef.current || e.changedTouches.length !== 1) return;
     const touch = e.changedTouches[0];
     const { boneId } = touchStateRef.current;
 

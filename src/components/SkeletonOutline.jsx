@@ -33,57 +33,38 @@ const ZONE_CONFIGS = {
   ],
 };
 
-// SVG skeleton outline paths for each region (semi-transparent gray silhouettes)
+// SVG skeleton outline paths for each region
 const SKELETON_PATHS = {
   upper_limb: `
-    <!-- Clavicle silhouette -->
     <path d="M145,55 Q175,35 215,50 Q245,35 265,55" stroke="#64748b" stroke-width="4" fill="none" stroke-linecap="round"/>
-    <!-- Shoulder arch -->
     <ellipse cx="230" cy="80" rx="35" ry="20" stroke="#475569" stroke-width="2" fill="none" stroke-dasharray="4 3"/>
-    <!-- Scapula silhouette -->
     <path d="M185,90 L220,100 L215,145 L205,170 L185,165 L180,140 L175,110 Z" stroke="#475569" stroke-width="2" fill="rgba(71,85,105,0.2)" stroke-dasharray="4 3"/>
-    <!-- Humerus silhouette -->
     <path d="M220,95 L225,180" stroke="#475569" stroke-width="22" fill="none" stroke-linecap="round" opacity="0.3"/>
-    <!-- Forearm silhouette -->
     <path d="M220,180 L220,255" stroke="#475569" stroke-width="18" fill="none" stroke-linecap="round" opacity="0.3"/>
-    <!-- Hand silhouette -->
     <ellipse cx="220" cy="320" rx="30" ry="50" stroke="#475569" stroke-width="2" fill="rgba(71,85,105,0.15)" stroke-dasharray="4 3"/>
-    <!-- Upper limb label -->
     <text x="320" y="200" font-size="11" fill="#64748b" font-family="sans-serif">上肢骨骼輪廓</text>
     <text x="320" y="215" font-size="10" fill="#475569" font-family="sans-serif">Upper Limb</text>
   `,
   lower_limb: `
-    <!-- Pelvis ring silhouette -->
     <path d="M130,45 Q180,30 230,45 Q235,70 230,100 Q180,115 130,100 Q125,70 130,45Z" stroke="#475569" stroke-width="2" fill="rgba(71,85,105,0.15)" stroke-dasharray="5 3"/>
-    <!-- Hip socket -->
     <circle cx="180" cy="115" r="22" stroke="#475569" stroke-width="2" fill="rgba(71,85,105,0.1)" stroke-dasharray="4 3"/>
-    <!-- Sacrum -->
     <path d="M172,110 L172,165 Q180,170 188,165 L188,110" stroke="#475569" stroke-width="2" fill="rgba(71,85,105,0.1)" stroke-dasharray="3 2"/>
-    <!-- Femur silhouette -->
     <path d="M165,135 L160,290" stroke="#475569" stroke-width="28" fill="none" stroke-linecap="round" opacity="0.3"/>
-    <!-- Knee area -->
     <ellipse cx="163" cy="295" rx="20" ry="25" stroke="#475569" stroke-width="2" fill="rgba(71,85,105,0.1)" stroke-dasharray="4 3"/>
-    <!-- Lower leg silhouette -->
     <path d="M158,320 L155,430" stroke="#475569" stroke-width="20" fill="none" stroke-linecap="round" opacity="0.3"/>
-    <!-- Foot silhouette -->
     <path d="M140,435 Q150,425 170,428 Q190,430 200,440 Q200,465 180,475 Q160,480 140,465 Q130,450 140,435Z" stroke="#475569" stroke-width="2" fill="rgba(71,85,105,0.15)" stroke-dasharray="4 3"/>
-    <!-- Lower limb label -->
     <text x="260" y="280" font-size="11" fill="#64748b" font-family="sans-serif">下肢骨骼輪廓</text>
     <text x="260" y="295" font-size="10" fill="#475569" font-family="sans-serif">Lower Limb</text>
   `,
   thorax: `
-    <!-- Sternum silhouette -->
     <path d="M165,55 L168,130" stroke="#475569" stroke-width="18" fill="none" stroke-linecap="round" opacity="0.3"/>
-    <!-- Rib cage outline -->
     <path d="M100,60 Q180,40 240,55" stroke="#475569" stroke-width="2" fill="none" stroke-dasharray="5 3"/>
     <path d="M95,80 Q180,60 245,75" stroke="#475569" stroke-width="2" fill="none" stroke-dasharray="5 3"/>
     <path d="M92,100 Q180,80 248,95" stroke="#475569" stroke-width="2" fill="none" stroke-dasharray="5 3"/>
     <path d="M90,120 Q180,100 250,115" stroke="#475569" stroke-width="2" fill="none" stroke-dasharray="5 3"/>
     <path d="M88,140 Q180,120 252,135" stroke="#475569" stroke-width="2" fill="none" stroke-dasharray="5 3"/>
     <path d="M88,160 Q180,140 255,155" stroke="#475569" stroke-width="2" fill="none" stroke-dasharray="5 3"/>
-    <!-- Spine silhouette -->
     <path d="M200,55 L200,165" stroke="#475569" stroke-width="25" fill="none" stroke-linecap="round" opacity="0.3"/>
-    <!-- Thoracic label -->
     <text x="260" y="110" font-size="11" fill="#64748b" font-family="sans-serif">胸廓骨骼輪廓</text>
     <text x="260" y="125" font-size="10" fill="#475569" font-family="sans-serif">Thorax</text>
   `,
@@ -117,7 +98,7 @@ export default function SkeletonOutline({
       <svg
         viewBox="0 0 360 520"
         className="w-full max-w-md mx-auto"
-        style={{ filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.3))' }}
+        style={{ filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.3))', touchAction: 'none' }}
       >
         {/* Background */}
         <rect width="360" height="520" fill="#1e293b" rx="16" />
@@ -133,12 +114,10 @@ export default function SkeletonOutline({
           const placedBoneId = correctPlacements[zone.id];
           const svgData = BONE_SVGS[zone.boneId];
 
-          // Zone fill color
           let fill = 'rgba(51,65,85,0.5)';
           let stroke = '#475569';
           let strokeWidth = 2;
           let dashArray = '5 4';
-          let animClass = '';
 
           if (isCorrect) {
             fill = 'rgba(22,101,52,0.6)';
@@ -164,7 +143,7 @@ export default function SkeletonOutline({
               onDragOver={isCorrect ? undefined : (e) => onDragOver(e, zone.id)}
               onDragLeave={isCorrect ? undefined : onDragLeave}
               onDrop={isCorrect ? undefined : (e) => handleDrop(e, zone.id)}
-              style={{ cursor: isCorrect ? 'default' : 'pointer' }}
+              style={{ cursor: isCorrect ? 'default' : 'pointer', touchAction: 'none' }}
             >
               {/* Drop zone rectangle */}
               <rect
@@ -177,28 +156,14 @@ export default function SkeletonOutline({
                 strokeWidth={strokeWidth}
                 strokeDasharray={dashArray}
                 rx="8"
-                className={`
-                  transition-all duration-200
-                  ${isDragOver && !isCorrect ? 'scale-105' : ''}
-                  ${isIncorrect ? 'animate-pulse-red' : ''}
-                  ${isCorrect ? 'animate-pulse-green' : ''}
-                `}
+                className={`transition-all duration-200 ${isDragOver && !isCorrect ? 'scale-105' : ''} ${isIncorrect ? 'animate-pulse-red' : ''} ${isCorrect ? 'animate-pulse-green' : ''}`}
               />
 
-              {/* Placed bone SVG (snapped in) */}
+              {/* Placed bone SVG */}
               {isCorrect && svgData && (
                 <g transform={`translate(${zone.x + zone.w/2 - 25}, ${zone.y + zone.h/2 - 25}) scale(0.5)`}>
-                  <svg
-                    viewBox={svgData.viewBox}
-                    width="100"
-                    height="100"
-                  >
-                    <path
-                      d={svgData.path}
-                      fill="#faf8f5"
-                      stroke="#e2e8f0"
-                      strokeWidth="3"
-                    />
+                  <svg viewBox={svgData.viewBox} width="100" height="100">
+                    <path d={svgData.path} fill="#faf8f5" stroke="#e2e8f0" strokeWidth="3" />
                   </svg>
                 </g>
               )}
@@ -206,83 +171,73 @@ export default function SkeletonOutline({
               {/* Drag-over indicator */}
               {isDragOver && !isCorrect && (
                 <g>
-                  <circle
-                    cx={zone.x + zone.w / 2}
-                    cy={zone.y + zone.h / 2}
-                    r="12"
-                    fill="#3b82f6"
-                    opacity="0.8"
-                  />
-                  <text
-                    x={zone.x + zone.w / 2}
-                    y={zone.y + zone.h / 2 + 5}
-                    textAnchor="middle"
-                    fontSize="14"
-                    fill="white"
-                    fontWeight="bold"
-                  >
-                    ↓
-                  </text>
+                  <circle cx={zone.x + zone.w / 2} cy={zone.y + zone.h / 2} r="14" fill="#3b82f6" opacity="0.85" />
+                  <text x={zone.x + zone.w / 2} y={zone.y + zone.h / 2 + 5} textAnchor="middle" fontSize="16" fill="white" fontWeight="bold">↓</text>
                 </g>
               )}
 
               {/* Incorrect flash X */}
               {isIncorrect && (
                 <g>
-                  <text
-                    x={zone.x + zone.w / 2}
-                    y={zone.y + zone.h / 2 + 6}
-                    textAnchor="middle"
-                    fontSize="20"
-                    fill="#ef4444"
-                    fontWeight="bold"
-                  >
-                    ✗
-                  </text>
+                  <text x={zone.x + zone.w / 2} y={zone.y + zone.h / 2 + 7} textAnchor="middle" fontSize="22" fill="#ef4444" fontWeight="bold">✗</text>
                 </g>
               )}
 
-              {/* Zone label - only in learn mode or when correct */}
+              {/* Zone label */}
               {(mode === 'learn' || isCorrect) && (
-                <text
-                  x={zone.x + zone.w / 2}
-                  y={zone.y + zone.h + 14}
-                  textAnchor="middle"
-                  fontSize="9"
-                  fill={isCorrect ? '#22c55e' : '#94a3b8'}
-                  fontFamily="sans-serif"
-                >
+                <text x={zone.x + zone.w / 2} y={zone.y + zone.h + 14} textAnchor="middle" fontSize="9" fill={isCorrect ? '#22c55e' : '#94a3b8'} fontFamily="sans-serif">
                   {isCorrect ? `✓ ${zone.label}` : zone.label}
                 </text>
               )}
 
-              {/* Hidden target label (shown on hover in exam mode) */}
+              {/* Exam mode mystery */}
               {mode === 'exam' && !isCorrect && (
-                <text
-                  x={zone.x + zone.w / 2}
-                  y={zone.y + zone.h / 2 + 4}
-                  textAnchor="middle"
-                  fontSize="16"
-                  fill="#64748b"
-                  fontFamily="sans-serif"
-                  fontWeight="bold"
-                >
-                  ?
-                </text>
+                <text x={zone.x + zone.w / 2} y={zone.y + zone.h / 2 + 4} textAnchor="middle" fontSize="16" fill="#64748b" fontFamily="sans-serif" fontWeight="bold">?</text>
               )}
             </g>
           );
         })}
       </svg>
 
+      {/* Mobile: also show drop zones as a list below the SVG for easier touch */}
+      <div className="mt-3 grid grid-cols-2 sm:grid-cols-3 gap-2">
+        {zones.map(zone => {
+          const isCorrect = !!correctPlacements[zone.id];
+          const isIncorrect = incorrectZone === zone.id;
+          const isDragOver = dragOverZone === zone.id;
+          return (
+            <div
+              key={zone.id}
+              data-zoneid={zone.id}
+              onDragOver={isCorrect ? undefined : (e) => onDragOver(e, zone.id)}
+              onDragLeave={isCorrect ? undefined : onDragLeave}
+              onDrop={isCorrect ? undefined : (e) => handleDrop(e, zone.id)}
+              className={`
+                rounded-xl border-2 border-dashed p-2.5 min-h-[64px] flex flex-col justify-center
+                transition-all text-xs select-none touch-manipulation
+                ${isCorrect ? 'border-emerald-500 bg-emerald-900/20' : ''}
+                ${isIncorrect ? 'border-red-500 bg-red-900/20 animate-pulse-red' : ''}
+                ${isDragOver && !isCorrect ? 'border-blue-400 bg-blue-900/30 scale-[1.02]' : ''}
+                ${!isCorrect && !isDragOver ? 'border-slate-600 bg-slate-800/40 hover:border-slate-500' : ''}
+              `}
+            >
+              <div className={`font-semibold ${isCorrect ? 'text-emerald-300' : 'text-slate-300'}`}>
+                {isCorrect || mode === 'learn' ? zone.label : '？？？'}
+              </div>
+              {isCorrect && <div className="text-emerald-400 text-[10px] mt-0.5">✓ 已放置</div>}
+              {isDragOver && !isCorrect && <div className="text-blue-300 text-[10px] mt-0.5 animate-pulse">放開放置</div>}
+              {!isCorrect && !isDragOver && <div className="text-slate-600 text-[10px] mt-0.5">拖放骨頭到這裡</div>}
+            </div>
+          );
+        })}
+      </div>
+
       {/* Progress bar */}
       <div className="mt-3 flex items-center gap-2">
         <div className="flex-1 h-2 bg-slate-700 rounded-full overflow-hidden">
           <div
             className="h-full bg-emerald-500 rounded-full transition-all duration-400"
-            style={{
-              width: `${Object.keys(correctPlacements).length / zones.length * 100}%`,
-            }}
+            style={{ width: `${Object.keys(correctPlacements).length / zones.length * 100}%` }}
           />
         </div>
         <span className="text-xs text-slate-400 shrink-0">

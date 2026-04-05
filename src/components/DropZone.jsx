@@ -17,9 +17,9 @@ export default function DropZone({
   const stateClass = isCorrect
     ? 'border-emerald-500 bg-emerald-900/25'
     : isIncorrect
-      ? 'border-red-500 bg-red-900/20 shake'
+      ? 'border-red-500 bg-red-900/20'
       : isDragOver
-        ? 'border-blue-400 bg-blue-900/30 scale-102 drop-target drag-over'
+        ? 'border-blue-400 bg-blue-900/30'
         : 'border-slate-600 bg-slate-800/40 drop-target hover:border-slate-500';
 
   return (
@@ -29,21 +29,22 @@ export default function DropZone({
       onDragLeave={onDragLeave}
       onDrop={(e) => onDrop(e, zone.id)}
       className={`
-        relative rounded-xl border-2 border-dashed p-3 min-h-[72px] transition-all
+        relative rounded-xl border-2 border-dashed p-3 min-h-[80px] transition-all select-none
         ${stateClass}
         ${isCorrect ? 'pulse-correct' : ''}
-        ${isIncorrect ? 'pulse-incorrect' : ''}
+        ${isIncorrect ? 'pulse-incorrect shake' : ''}
+        ${isDragOver && !isCorrect ? 'drag-over scale-[1.02]' : ''}
       `}
     >
       {/* Zone label */}
-      <div className="flex items-center justify-between mb-1">
+      <div className="flex items-center justify-between mb-1.5">
         <span className="text-xs text-slate-500 font-medium">{zone.position}</span>
         {mode === 'learn' && !isCorrect && (
           <button
             onClick={() => setShowHint(h => !h)}
-            className="text-[10px] text-blue-400 hover:text-blue-300 transition-colors"
+            className="text-xs text-blue-400 hover:text-blue-300 transition-colors min-w-[44px] min-h-[28px] flex items-center justify-center rounded-lg hover:bg-slate-700/50"
           >
-            {showHint ? '隱藏提示' : '提示'}
+            {showHint ? '隱藏' : '💡 提示'}
           </button>
         )}
         {isCorrect && (
@@ -54,16 +55,16 @@ export default function DropZone({
       </div>
 
       {/* Target bone name */}
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 flex-wrap">
         <div className={`text-sm font-bold ${isCorrect ? 'text-emerald-300' : 'text-slate-300'}`}>
           {isCorrect || mode === 'learn' ? zone.boneName : '？？？'}
         </div>
         {isCorrect && placedBone && (
           <button
             onClick={() => onInfoClick?.(placedBone)}
-            className="text-xs bg-emerald-800/60 hover:bg-emerald-700/60 text-emerald-300 px-2 py-0.5 rounded-full transition-colors"
+            className="text-xs bg-emerald-800/60 hover:bg-emerald-700/60 text-emerald-300 px-2.5 py-1 rounded-full transition-colors min-h-[36px] flex items-center"
           >
-            📋 臨床資訊
+            📋 臨床
           </button>
         )}
       </div>
@@ -75,21 +76,21 @@ export default function DropZone({
 
       {/* Hint tooltip */}
       {showHint && mode === 'learn' && !isCorrect && (
-        <div className="mt-2 text-[11px] text-blue-300 bg-blue-900/30 rounded-lg px-2.5 py-2 border border-blue-800/50 fade-in">
+        <div className="mt-2 text-[11px] text-blue-300 bg-blue-900/30 rounded-lg px-3 py-2 border border-blue-800/50 fade-in">
           💡 {zone.hint}
         </div>
       )}
 
-      {/* Placed (wrong) indicator */}
+      {/* Incorrect flash indicator */}
       {isIncorrect && (
         <div className="absolute inset-0 flex items-center justify-center rounded-xl pointer-events-none">
-          <span className="text-red-400 text-2xl">✗</span>
+          <span className="text-red-400 text-3xl">✗</span>
         </div>
       )}
 
       {/* Empty drop indicator */}
       {!isCorrect && !isDragOver && (
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-20">
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-15">
           <span className="text-slate-400 text-2xl">⊕</span>
         </div>
       )}
@@ -97,7 +98,7 @@ export default function DropZone({
       {/* Drag over indicator */}
       {isDragOver && !isCorrect && (
         <div className="absolute inset-0 flex items-center justify-center rounded-xl pointer-events-none">
-          <span className="text-blue-300 text-2xl animate-bounce">↓</span>
+          <span className="text-blue-300 text-3xl animate-bounce">↓</span>
         </div>
       )}
     </div>

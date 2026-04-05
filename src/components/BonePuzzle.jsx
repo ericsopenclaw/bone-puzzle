@@ -21,7 +21,7 @@ export default function BonePuzzle({ region, mode, gameState, onScoreChange, onC
 
   // Game state
   const [shuffledBones, setShuffledBones] = useState([]);
-  const [correctPlacements, setCorrectPlacements] = useState({}); // zoneId -> boneId
+  const [correctPlacements, setCorrectPlacements] = useState({});
   const [incorrectZone, setIncorrectZone] = useState(null);
   const [tipBone, setTipBone] = useState(null);
   const [attempts, setAttempts] = useState(0);
@@ -64,11 +64,10 @@ export default function BonePuzzle({ region, mode, gameState, onScoreChange, onC
 
   const handleDrop = useCallback((boneId, zoneId) => {
     if (gameState !== 'playing') return;
-    if (correctPlacements[zoneId]) return; // already correct
+    if (correctPlacements[zoneId]) return;
 
     setAttempts(a => a + 1);
 
-    // Check if bone matches zone
     if (getZoneId(boneId) === zoneId) {
       setCorrectPlacements(prev => ({ ...prev, [zoneId]: boneId }));
     } else {
@@ -85,51 +84,43 @@ export default function BonePuzzle({ region, mode, gameState, onScoreChange, onC
   const correctBoneIds = new Set(Object.values(correctPlacements));
   const accuracy = attempts > 0 ? Math.round((score / attempts) * 100) : 0;
 
-  if (gameState === 'idle') {
-    return (
-      <div className="flex flex-col items-center justify-center py-20 text-center">
-        <div className="text-6xl mb-4">{regionInfo?.icon || '🦴'}</div>
-        <h2 className="text-2xl font-bold text-white mb-2">骨骼拼圖練習</h2>
-        <p className="text-slate-400 max-w-sm">
-          選擇部位和遊戲模式後，點擊「開始遊戲」開始練習。
-        </p>
-      </div>
-    );
-  }
-
   if (gameState === 'finished') {
     const perfect = score === total;
     return (
-      <div className="flex flex-col items-center justify-center py-12 text-center fade-in">
-        <div className="text-7xl mb-4">{perfect ? '🏆' : score >= total * 0.8 ? '🎉' : '💪'}</div>
-        <h2 className="text-3xl font-bold text-white mb-2">
+      <div className="flex flex-col items-center justify-center py-8 text-center fade-in">
+        <div className="text-6xl mb-3">{perfect ? '🏆' : score >= total * 0.8 ? '🎉' : '💪'}</div>
+        <h2 className="text-2xl font-bold text-white mb-1">
           {perfect ? '完美！' : score >= total * 0.8 ? '答得不錯！' : '繼續加油！'}
         </h2>
-        <div className="text-slate-400 mb-6">
+        <div className="text-slate-400 text-xs mb-5">
           {regionInfo?.name} — {mode === 'exam' ? '考試模式' : '學習模式'}
         </div>
-        <div className="grid grid-cols-3 gap-4 mb-8">
-          <div className="bg-slate-800 border border-slate-700 rounded-2xl p-4">
-            <div className="text-3xl font-bold text-white">{score}/{total}</div>
-            <div className="text-xs text-slate-400 mt-1">正確答案</div>
+        <div className="grid grid-cols-3 gap-3 mb-6 w-full max-w-sm">
+          <div className="bg-slate-800 border border-slate-700 rounded-2xl p-3">
+            <div className="text-2xl font-bold text-white">{score}/{total}</div>
+            <div className="text-[10px] text-slate-400 mt-0.5">正確答案</div>
           </div>
-          <div className="bg-slate-800 border border-slate-700 rounded-2xl p-4">
-            <div className="text-3xl font-bold text-white">{attempts}</div>
-            <div className="text-xs text-slate-400 mt-1">總嘗試次數</div>
+          <div className="bg-slate-800 border border-slate-700 rounded-2xl p-3">
+            <div className="text-2xl font-bold text-white">{attempts}</div>
+            <div className="text-[10px] text-slate-400 mt-0.5">嘗試次數</div>
           </div>
-          <div className={`bg-slate-800 border rounded-2xl p-4 ${accuracy >= 80 ? 'border-emerald-700' : accuracy >= 60 ? 'border-yellow-700' : 'border-red-700'}`}>
-            <div className={`text-3xl font-bold ${accuracy >= 80 ? 'text-emerald-400' : accuracy >= 60 ? 'text-yellow-400' : 'text-red-400'}`}>
+          <div className={`bg-slate-800 border rounded-2xl p-3 ${accuracy >= 80 ? 'border-emerald-700' : accuracy >= 60 ? 'border-yellow-700' : 'border-red-700'}`}>
+            <div className={`text-2xl font-bold ${accuracy >= 80 ? 'text-emerald-400' : accuracy >= 60 ? 'text-yellow-400' : 'text-red-400'}`}>
               {accuracy}%
             </div>
-            <div className="text-xs text-slate-400 mt-1">答題準確率</div>
+            <div className="text-[10px] text-slate-400 mt-0.5">準確率</div>
           </div>
         </div>
-        <div className="bg-slate-800/60 border border-slate-700 rounded-xl px-5 py-3 text-sm text-slate-400">
-          {perfect
-            ? '太厲害了！所有骨骼都放對位置了！'
-            : `共答對 ${score} 題，錯誤 ${attempts - score} 次。`
-          }
+        <div className="bg-slate-800/60 border border-slate-700 rounded-xl px-4 py-2.5 text-xs text-slate-400 mb-5">
+          {perfect ? '太厲害了！所有骨骼都放對位置了！' : `共答對 ${score} 題，錯誤 ${attempts - score} 次。`}
         </div>
+        {/* Back button */}
+        <button
+          onClick={() => {}}
+          className="text-xs text-blue-400 hover:text-blue-300 transition-colors"
+        >
+          返回遊戲選單
+        </button>
       </div>
     );
   }
@@ -138,7 +129,7 @@ export default function BonePuzzle({ region, mode, gameState, onScoreChange, onC
     <div
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
-      className="space-y-4"
+      className="space-y-3"
     >
       {/* Score */}
       <ScoreBoard
@@ -150,25 +141,44 @@ export default function BonePuzzle({ region, mode, gameState, onScoreChange, onC
         onTimeUp={onComplete}
       />
 
-      <div className="grid grid-cols-1 lg:grid-cols-[300px_1fr] gap-5">
-        {/* LEFT: Draggable bone tray */}
-        <div className="bg-slate-800/40 border border-slate-700 rounded-2xl p-4">
-          <div className="flex items-center gap-2 mb-3">
-            <span className="text-lg">{regionInfo?.icon}</span>
+      {/* Mobile: bones list on TOP, skeleton below */}
+      {/* Desktop: skeleton left, bones right */}
+      <div className="flex flex-col lg:flex-row gap-3">
+        {/* Skeleton outline - TOP on mobile, LEFT on desktop */}
+        <div className="w-full lg:w-[45%] order-2 lg:order-1 bg-slate-800/40 border border-slate-700 rounded-2xl p-3">
+          <div className="flex items-center gap-2 mb-2">
+            <span className="text-base">🎯</span>
             <h3 className="text-sm font-semibold text-slate-300">
-              骨骼列表 — {regionInfo?.name}
+              骨骼輪廓
             </h3>
             <span className="ml-auto text-xs text-slate-500">
-              拖放到右側
+              {score}/{total} 完成
             </span>
           </div>
+          <SkeletonOutline
+            region={region}
+            correctPlacements={correctPlacements}
+            incorrectZone={incorrectZone}
+            dragOverZone={effectiveDragOver}
+            onDrop={dndDrop}
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            mode={mode}
+            bones={bones}
+            onInfoClick={setTipBone}
+          />
+        </div>
 
-          {/* Instruction for image mode */}
-          <div className="mb-3 flex items-center gap-2 bg-blue-900/30 border border-blue-800/50 rounded-xl px-3 py-2">
-            <span className="text-blue-300 text-sm">💡</span>
-            <p className="text-xs text-blue-300 leading-relaxed">
-              拖曳骨頭圖片，放到右側骨骼輪廓的正確位置
-            </p>
+        {/* Bone tray - BOTTOM on mobile, RIGHT on desktop */}
+        <div className="w-full lg:w-[55%] order-1 lg:order-2 bg-slate-800/40 border border-slate-700 rounded-2xl p-3">
+          <div className="flex items-center gap-2 mb-2">
+            <span className="text-base">{regionInfo?.icon}</span>
+            <h3 className="text-sm font-semibold text-slate-300">
+              骨骼列表
+            </h3>
+            <span className="ml-auto text-xs text-slate-500">
+              拖放到上方
+            </span>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -188,33 +198,6 @@ export default function BonePuzzle({ region, mode, gameState, onScoreChange, onC
               />
             ))}
           </div>
-        </div>
-
-        {/* RIGHT: Skeleton outline */}
-        <div className="bg-slate-800/40 border border-slate-700 rounded-2xl p-4">
-          <div className="flex items-center gap-2 mb-3">
-            <span className="text-lg">🎯</span>
-            <h3 className="text-sm font-semibold text-slate-300">
-              骨骼輪廓 — {regionInfo?.name}
-            </h3>
-            <span className="ml-auto text-xs text-slate-500">
-              {score}/{total} 完成
-            </span>
-          </div>
-
-          {/* Skeleton SVG with drop zones */}
-          <SkeletonOutline
-            region={region}
-            correctPlacements={correctPlacements}
-            incorrectZone={incorrectZone}
-            dragOverZone={effectiveDragOver}
-            onDrop={dndDrop}
-            onDragOver={handleDragOver}
-            onDragLeave={handleDragLeave}
-            mode={mode}
-            bones={bones}
-            onInfoClick={setTipBone}
-          />
         </div>
       </div>
 

@@ -1,14 +1,22 @@
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 @layer base {
   * {
     box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+  }
+  html {
+    scroll-behavior: smooth;
   }
   body {
     margin: 0;
     font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, 'PingFang TC', 'Microsoft JhengHei', sans-serif;
     background: #0f172a;
     color: #e2e8f0;
+    -webkit-font-smoothing: antialiased;
+    overscroll-behavior: none;
   }
   #root {
     width: 100%;
@@ -16,12 +24,27 @@
     text-align: left;
     border: none;
   }
+  /* Prevent pull-to-refresh on mobile during drag */
+  body.dragging {
+    overscroll-behavior: none;
+    touch-action: none;
+  }
+  /* Larger touch targets system-wide */
+  button, a, [role="button"] {
+    touch-action: manipulation;
+  }
+  /* Disable text selection during drag */
+  .dragging * {
+    user-select: none !important;
+    -webkit-user-select: none !important;
+  }
 }
 
 @layer utilities {
   .bone-card {
     cursor: grab;
     user-select: none;
+    -webkit-user-select: none;
     transition: transform 0.15s, box-shadow 0.15s, opacity 0.15s;
   }
   .bone-card:active {
@@ -73,6 +96,20 @@
     from { opacity: 0; transform: translateY(8px); }
     to { opacity: 1; transform: translateY(0); }
   }
+
+  /* Mobile touch improvements */
+  .touch-manipulation {
+    touch-action: manipulation;
+    -webkit-touch-callout: none;
+  }
+
+  /* Safe area for notched phones */
+  .safe-area-top {
+    padding-top: env(safe-area-inset-top, 0);
+  }
+  .safe-area-bottom {
+    padding-bottom: env(safe-area-inset-bottom, 0);
+  }
 }
 
 /* Bone SVG styles */
@@ -95,4 +132,56 @@
   0% { opacity: 0.6; }
   50% { opacity: 1; }
   100% { opacity: 0.6; }
+}
+
+/* Mobile-specific responsive adjustments */
+@media (max-width: 640px) {
+  /* Ensure minimum touch target sizes */
+  button {
+    min-height: 44px;
+  }
+  /* Reduce padding to fit more content on small screens */
+  .gap-4 {
+    gap: 0.75rem;
+  }
+  /* Ensure bone items have enough height */
+  [class*="bone-card"] {
+    min-height: 68px !important;
+  }
+  /* Full-width skeleton drop zones on mobile */
+  .skeleton-outline-container {
+    width: 100%;
+  }
+  /* Prevent horizontal overflow */
+  body {
+    overflow-x: hidden;
+  }
+  /* Ensure modal is usable on small screens */
+  .modal-mobile {
+    max-height: 85vh;
+    overflow-y: auto;
+  }
+}
+
+/* Landscape phone */
+@media (max-height: 500px) and (orientation: landscape) {
+  header {
+    padding: 0.25rem 0;
+  }
+}
+
+/* Scrollbar styling for webkit browsers */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #1e293b;
+}
+::-webkit-scrollbar-thumb {
+  background: #475569;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #64748b;
 }
